@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
@@ -31,13 +30,6 @@ public class Packet {
         this.arguments = arguments;
     }
 
-    public void setArguments(Object... arguments) {
-        this.arguments = arguments;
-    }
-    public void setArgumentsArray(Object[] arguments) {
-        this.arguments = arguments;
-    }
-
     protected static String xmlGenerate(Packet packet) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Packet.class);
         Marshaller m = jc.createMarshaller();
@@ -53,6 +45,14 @@ public class Packet {
         return (Packet) unm.unmarshal(sr);
     }
 
+    public void setArguments(Object... arguments) {
+        this.arguments = arguments;
+    }
+
+    public void setArgumentsArray(Object[] arguments) {
+        this.arguments = arguments;
+    }
+
     protected String xmlGenerate() throws JAXBException {
         return Packet.xmlGenerate(this);
     }
@@ -65,18 +65,19 @@ public class Packet {
                 '}';
     }
 
-    public boolean checkArgCount(){
+    public boolean checkArgCount() {
         int length;
-        if(arguments!=null)
-            length=arguments.length;
+        if (arguments != null)
+            length = arguments.length;
         else
-            length=0;
-        return func.getArgCount()==length;
+            length = 0;
+        return func.getArgCount() == length;
     }
-    public <T> T[] getArrayOfArgs(Class<? extends T[]> newType){
+
+    public <T> T[] getArrayOfArgs(Class<? extends T[]> newType) {
         try {
             return Arrays.copyOf(arguments, arguments.length, newType);
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             return null;
         }
     }

@@ -6,7 +6,9 @@ public class User {
     private String pass = "";
     private UsersTypes type = UsersTypes.NO;
 
-    public User(){}
+    public User() {
+    }
+
     public User(String login, String pass, UsersTypes type) {
         this.type = type;
         this.login = login;

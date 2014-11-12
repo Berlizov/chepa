@@ -33,9 +33,8 @@ public class DB {
                     " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
             sql += "CREATE TABLE PROJECT  " +
-                    "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    " NAME     CHAR(50)    NOT NULL, " +
-                    " PRODUCT_OWNER     CHAR(50)     NOT NULL, " +
+                    "(NAME     CHAR(50) PRIMARY KEY  NOT NULL, " +
+                    " PRODUCT_OWNER     CHAR(50), " +
                     " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
             sql += "CREATE TABLE PROJECT_USER  " +
@@ -101,10 +100,10 @@ public class DB {
         try {
             String sql = "SELECT * FROM USERS " +
                     "WHERE LOGIN LIKE '" + u.getLogin() + "' " +
-                    "AND PASS LIKE '" + u.getPass()+ "' ";
+                    "AND PASS LIKE '" + u.getPass() + "' ";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
+            if (rs.next()) {
                 return UsersTypes.valueOf(rs.getInt("TYPE"));
             }
         } catch (Exception e) {
@@ -140,7 +139,7 @@ public class DB {
                         UsersTypes.valueOf(rs.getInt("TYPE"))));
 
             }
-            return str.toArray(new User[0]);
+            return str.toArray(new User[str.size()]);
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
             return null;
@@ -162,7 +161,7 @@ public class DB {
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
-        return str.toArray(new User[0]);
+        return str.toArray(new User[str.size()]);
     }
 
     public static boolean changeUserType(User user) {
@@ -187,8 +186,8 @@ public class DB {
                     "WHERE LOGIN LIKE '" + userLogin + "'";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                if(rs.getInt("COUNT(*)")<=0)
-                    userLogin="";
+                if (rs.getInt("COUNT(*)") <= 0)
+                    userLogin = "";
             }
             sql = "INSERT INTO PROJECT (NAME, PRODUCT_OWNER) " +
                     "VALUES ( '" + name + "', '" + userLogin + "')";
@@ -204,7 +203,7 @@ public class DB {
     public static String[] getProjects(User user) {
         try {
             String sql;
-            switch (user.getType()){
+            switch (user.getType()) {
                 case ADMIN:
                     sql = "SELECT * FROM PROJECT ";
                     break;
@@ -217,11 +216,11 @@ public class DB {
             }
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
-            ArrayList<String> str = new ArrayList<String>();
+            ArrayList<String> str = new ArrayList<>();
             while (rs.next()) {
                 str.add(rs.getString("NAME"));
             }
-            return str.toArray(new String[0]);
+            return str.toArray(new String[str.size()]);
         } catch (Exception e) {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
             return null;

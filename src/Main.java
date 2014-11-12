@@ -7,6 +7,7 @@ import java.net.Socket;
 
 public class Main {
     static Sync sync;
+
     public static void main(String[] args) {
         DB.connectDB();
         DB.createDefTables();
@@ -15,13 +16,13 @@ public class Main {
     }
 
     private static void startServer(int portNumber) {
-        sync=new Sync();
+        sync = new Sync();
         try {
             ServerSocket serverSocket = new ServerSocket(portNumber);
             System.out.println("Server start.");
             while (true) {
                 Socket s = serverSocket.accept();
-                SocketForOneUser sfou=new SocketForOneUser(s,sync);
+                SocketForOneUser sfou = new SocketForOneUser(s, sync);
                 sync.addSocketForOneUser(sfou);
                 sfou.start();
             }
