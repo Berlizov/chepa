@@ -1,6 +1,10 @@
+import jdk.nashorn.internal.runtime.regexp.joni.constants.Arguments;
+import sun.plugin.javascript.navig.Array;
+
 import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 
 /**
  * Created by 350z6_000 on 25.09.2014.
@@ -26,8 +30,9 @@ public class SocketForOneUser extends Thread {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             switcher();
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             System.err.println("Error on client connect");
+            sync.removeSocketForOneUser(this);
             currentThread().interrupt();
         }
     }
@@ -62,50 +67,79 @@ public class SocketForOneUser extends Thread {
         }
     }
 
-    public void switcher() throws IOException {
+    public void switcher() throws IOException, IllegalArgumentException{
         while (true) {
-            try {
+            try{
                 Packet pock = readMassage();
-                if (pock.checkArgCount()) {
-                    //todo
-                }
-                boolean update = false;
+                try {
+                    if (!pock.checkArgCount()) {
+                        writeMassage(pock);
+                        throw new IllegalArgumentException("Wrong number of arguments - " + pock.func + " " + pock.arguments.length + "/" + pock.func.getArgCount());
+                    }
+                    boolean update = false;
 
-                switch (pock.func) {
-                    case LOGIN:
-                        user.setLogin((String) pock.arguments[0]);
-                        user.setPass((String) pock.arguments[1]);
-                        user.setType(DB.getUserType(user));
-                        pock.setArguments(user.getType());
-                        break;
-                    case ADD_USER:
-                        pock.setArguments(DB.addUser((User) pock.arguments[0]));
-                        update = true;
-                        break;
-                    case CHANGE_USER_TYPE:
-                        User TempUser = (User) pock.arguments[0];
-                        pock.setArguments(DB.changeUserType(TempUser));
-                        update = true;
-                        break;
-                    case GET_USERS_BY_TYPES:
-                        pock.setArgumentsArray(DB.getUsersByType((UsersTypes) pock.arguments[0]));
-                        break;
-                    case GET_ALL_USERS_AND_TYPES:
-                        pock.setArgumentsArray(DB.getAllUsersLoginsTypes());
-                        break;
-                    case GET_PROJECTS:
-                        pock.setArguments(DB.getProjects(user));
-                        break;
-                    case ADD_PROJECTS:
-                        pock.setArguments(DB.addProject((String) pock.arguments[0], (String) pock.arguments[1]));
-                        update = true;
+                    switch (pock.func) {
+                        case LOGIN:
+                            user.setLogin((String) pock.arguments[0]);
+                            user.setPass((String) pock.arguments[1]);
+                            user.setType(DBConnector.getUserType(user));
+                            pock.setArguments(user.getType());
+                            break;
+                        case ADD_USER:
+                            pock.setArguments(DBConnector.addUser((User) pock.arguments[0]));
+                            update = true;
+                            break;
+                        case CHANGE_USER_TYPE:
+                            User TempUser = (User) pock.arguments[0];
+                            pock.setArguments(DBConnector.changeUserType(TempUser));
+                            update = true;
+                            break;
+                        case CHANGE_USER_PASS:
+                            user.setPass((String) pock.arguments[0]);
+                            pock.setArguments(DBConnector.setNewPass(user));
+                            break;
+                        case GET_USERS_BY_TYPES:
+                            pock.setArguments(DBConnector.getUsersByType((UsersTypes) pock.arguments[0]));
+                            break;
+                        case GET_ALL_USERS_AND_TYPES:
+                            pock.setArguments(DBConnector.getAllUsersLoginsTypes());
+                            break;
+                        case GET_PROJECTS:
+                            pock.setArguments(DBConnector.getProjects(user));
+                            break;
+                        case ADD_PROJECTS:
+                            pock.setArguments(DBConnector.addProject((String) pock.arguments[0],
+                                    (String) pock.arguments[1]));
+                            update = true;
+                            break;
+                        case CHANGE_PROJECT_PRODUCT_OWNER:
+                            pock.setArguments(DBConnector.changeProjectProductOwner((String) pock.arguments[0], (String) pock.arguments[1]));
+                            update = true;
+                            break;
+                        case GET_PROJECT_PRODUCT_OWNER:
+                            pock.setArguments(DBConnector.getProjectProductOwner((String) pock.arguments[0]));
+                            break;
+                        case GET_PROJECT_USERS:
+                            pock.setArguments(DBConnector.getProjectUsers((String) pock.arguments[0]));
+                            break;
+                        case CHANGE_PROJECT_USERS:
+                            String[] s = pock.getArrayOfArgs(String[].class);
+                            pock.setArguments(DBConnector.changeProjectUsers(s[0], Arrays.copyOfRange(s, 1, s.length)));
+                            update = true;
+                            break;
+                    }
+                    writeMassage(pock);
+                    if (update)
+                        sync.update(this);
+                }catch (ClassCastException e){
+                    e.printStackTrace();
+                    pock.setArguments(null);
+                    writeMassage(pock);
                 }
-                writeMassage(pock);
-                if (update)
-                    sync.update();
             } catch (JAXBException e) {
                 e.printStackTrace();
             }
+
         }
     }
 }

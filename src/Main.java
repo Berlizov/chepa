@@ -1,21 +1,33 @@
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
  * Created by 350z6_000 on 20.09.2014.
  */
-
 public class Main {
-    static Sync sync;
+    private static Sync sync;
 
-    public static void main(String[] args) {
-        DB.connectDB();
-        DB.createDefTables();
-        startServer(4567);
-
+    public Main() {
+        DBConnector.connectDB();
+        DBConnector.createDefTables();
     }
 
-    private static void startServer(int portNumber) {
+    public static void main(String[] args) {
+        Main m = new Main();
+        int port = 4567;
+        if (args.length == 1) {
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch (Exception e) {
+                System.err.println("The first argument must be a number.");
+                return;
+            }
+        }
+        m.startServer(port);
+    }
+
+    private void startServer(int portNumber) {
         sync = new Sync();
         try {
             ServerSocket serverSocket = new ServerSocket(portNumber);
@@ -26,8 +38,13 @@ public class Main {
                 sync.addSocketForOneUser(sfou);
                 sfou.start();
             }
+        } catch (BindException e) {
+            System.err.println("Cant start the server. The port #" + portNumber + " is busy.");
+        } catch (IllegalArgumentException e) {
+            System.err.println("Port value out of range.");
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
             System.out.println("Server end.");
         }
     }

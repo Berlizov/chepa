@@ -15,13 +15,13 @@ import java.util.Arrays;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlSeeAlso({UsersTypes.class, User.class})
+@XmlSeeAlso({UsersTypes.class, User.class,String.class})
 public class Packet {
     public API func;
     public Object[] arguments;
 
 
-    public Packet() {
+    private Packet() {
 
     }
 
@@ -49,10 +49,6 @@ public class Packet {
         this.arguments = arguments;
     }
 
-    public void setArgumentsArray(Object[] arguments) {
-        this.arguments = arguments;
-    }
-
     protected String xmlGenerate() throws JAXBException {
         return Packet.xmlGenerate(this);
     }
@@ -71,7 +67,7 @@ public class Packet {
             length = arguments.length;
         else
             length = 0;
-        return func.getArgCount() == length;
+        return (((func.getArgCount()>0)&&(func.getArgCount() == length))||((func.getArgCount()<=0)&&(func.getArgCount() <= length)));
     }
 
     public <T> T[] getArrayOfArgs(Class<? extends T[]> newType) {

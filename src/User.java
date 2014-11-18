@@ -38,4 +38,15 @@ public class User {
     public void setLogin(String login) {
         this.login = login;
     }
+    public static Boolean checkPass(String pass)
+    {
+        return (pass.length()>=5);
+    }
+    public static Boolean checkLogin(String login)
+    {
+        return (login.length()>=5);
+    }
+    public static Boolean checkLoginParameters(String login, String password) {
+        return User.checkLogin(login)&&User.checkPass(password);
+    }
 }
