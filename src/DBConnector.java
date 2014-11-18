@@ -18,7 +18,7 @@ public class DBConnector {
             System.out.println("Opened database successfully");
             stmt = db.createStatement();
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             System.exit(0);
         }
 
@@ -38,7 +38,7 @@ public class DBConnector {
 
         } catch (Exception e) {
             if (!e.getMessage().equals("table USERS already exists")) {
-                System.err.println(e.getClass().getName() + ": " + e.getMessage());
+                e.printStackTrace();
                 System.exit(0);
             }
         }
@@ -64,14 +64,14 @@ public class DBConnector {
                     " USER     CHAR(50)     NOT NULL, " +
                     " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
-            /*sql += "CREATE TABLE TASK " +
+            sql += "CREATE TABLE TASK " +
                     "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
                     " NAME     CHAR(50)    NOT NULL, " +
-                    " DESCRIPTION     TEXT, " +
+                    " PROJECT     CHAR(50)    NOT NULL, " +
                     " COMPLEXITY     INTEGER, " +
                     " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
-            sql += "CREATE TABLE TASK_DEVELOPER " +
+            /*sql += "CREATE TABLE TASK_DEVELOPER " +
                     "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
                     " TASK_ID     INTEGER    NOT NULL, " +
                     " DEVELOPER_ID     INTEGER    NOT NULL, " +
@@ -113,7 +113,7 @@ public class DBConnector {
 
             return true;
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -130,7 +130,7 @@ public class DBConnector {
                 return UsersTypes.valueOf(rs.getInt("TYPE"));
             }
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
         }
         return UsersTypes.NO;
     }
@@ -145,7 +145,7 @@ public class DBConnector {
 
             return true;
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -165,7 +165,7 @@ public class DBConnector {
             }
             return str.toArray(new User[str.size()]);
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
@@ -184,7 +184,7 @@ public class DBConnector {
                         newType));
             }
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
         }
         return str.toArray(new User[str.size()]);
     }
@@ -199,7 +199,7 @@ public class DBConnector {
 
             return true;
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -221,7 +221,7 @@ public class DBConnector {
 
             return true;
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -249,7 +249,7 @@ public class DBConnector {
             }
             return str.toArray(new String[str.size()]);
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
@@ -264,7 +264,7 @@ public class DBConnector {
 
             return true;
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -279,7 +279,7 @@ public class DBConnector {
                 return rs.getString("PRODUCT_OWNER");
             }
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
@@ -308,7 +308,7 @@ public class DBConnector {
             }
             return users.toArray(new User[users.size()]);
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
@@ -331,21 +331,48 @@ public class DBConnector {
             }
             return true;
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
 
-   /* public static boolean addTask(String name, String description, Integer projectID) {
+/**Task
+ * sql += "CREATE TABLE TASK " +
+ "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
+ " NAME     CHAR(50)    NOT NULL, " +
+ " PROJECT     CHAR(50)    NOT NULL, " +
+ " COMPLEXITY     INTEGER, " +
+ " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+ " );\n";
+ * */
+    public static boolean addTask(Task task) {
         try {
-            String sql = "INSERT INTO TASK (PROJECT_ID, NAME,DESCRIPTION ) " +
-                    "VALUES ( '" + projectID + "', '"+" '" + name + "', '" + description + "')";
+            String sql = "INSERT INTO TASK (NAME, PROJECT, COMPLEXITY) " +
+                    "VALUES ( '" + task.getName() + "', '" + task.getProject() + "', " + task.getComplexity().ordinal() + " );";
+            System.err.println(sql);
             stmt.executeUpdate(sql);
             return true;
         } catch (Exception e) {
-            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
-    }*/
+    }
+    public static Task[]  getProjectTasks(String project) {
+        try {
+            String sql = "SELECT * FROM TASK\n" +
+                    "WHERE PROJECT='"+project+"'";
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            ArrayList<Task> tasks = new ArrayList<>();
+            while (rs.next()) {
+                tasks.add(new Task(rs.getString("NAME"),
+                        rs.getString("PROJECT")));
+            }
+            return tasks.toArray(new Task[tasks.size()]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
 

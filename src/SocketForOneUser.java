@@ -1,6 +1,3 @@
-import jdk.nashorn.internal.runtime.regexp.joni.constants.Arguments;
-import sun.plugin.javascript.navig.Array;
-
 import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.net.Socket;
@@ -67,14 +64,15 @@ public class SocketForOneUser extends Thread {
         }
     }
 
-    public void switcher() throws IOException, IllegalArgumentException{
+    public void switcher() throws IOException, IllegalArgumentException {
         while (true) {
-            try{
+            try {
                 Packet pock = readMassage();
                 try {
                     if (!pock.checkArgCount()) {
                         writeMassage(pock);
-                        throw new IllegalArgumentException("Wrong number of arguments - " + pock.func + " " + pock.arguments.length + "/" + pock.func.getArgCount());
+                        throw new IllegalArgumentException("Wrong number of arguments - " + pock.func + " " +
+                                pock.arguments.length + "/" + pock.func.getArgCount());
                     }
                     boolean update = false;
 
@@ -109,11 +107,12 @@ public class SocketForOneUser extends Thread {
                             break;
                         case ADD_PROJECTS:
                             pock.setArguments(DBConnector.addProject((String) pock.arguments[0],
-                                    (String) pock.arguments[1]));
+                                                                    (String) pock.arguments[1]));
                             update = true;
                             break;
                         case CHANGE_PROJECT_PRODUCT_OWNER:
-                            pock.setArguments(DBConnector.changeProjectProductOwner((String) pock.arguments[0], (String) pock.arguments[1]));
+                            pock.setArguments(DBConnector.changeProjectProductOwner((String) pock.arguments[0],
+                                                                                    (String) pock.arguments[1]));
                             update = true;
                             break;
                         case GET_PROJECT_PRODUCT_OWNER:
@@ -127,11 +126,18 @@ public class SocketForOneUser extends Thread {
                             pock.setArguments(DBConnector.changeProjectUsers(s[0], Arrays.copyOfRange(s, 1, s.length)));
                             update = true;
                             break;
+                        case ADD_PROJECT_TASK:
+                            pock.setArguments(DBConnector.addTask((Task) pock.arguments[0]));
+                            update = true;
+                            break;
+                        case GET_PROJECT_TASKS:
+                            pock.setArguments(DBConnector.getProjectTasks((String) pock.arguments[0]));
+                            break;
                     }
                     writeMassage(pock);
                     if (update)
                         sync.update(this);
-                }catch (ClassCastException e){
+                } catch (ClassCastException e) {
                     e.printStackTrace();
                     pock.setArguments(null);
                     writeMassage(pock);

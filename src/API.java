@@ -14,7 +14,9 @@ public enum API {
     CHANGE_PROJECT_PRODUCT_OWNER(2),
     GET_PROJECT_PRODUCT_OWNER(1),
     GET_PROJECT_USERS(1),
-    CHANGE_PROJECT_USERS(-1);
+    CHANGE_PROJECT_USERS(-1),
+    ADD_PROJECT_TASK(1),
+    GET_PROJECT_TASKS(1);
     final int argCount;
 
     private API(int argCount) {

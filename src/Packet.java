@@ -15,7 +15,7 @@ import java.util.Arrays;
  */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlSeeAlso({UsersTypes.class, User.class,String.class})
+@XmlSeeAlso({UsersTypes.class, User.class,Task.class})
 public class Packet {
     public API func;
     public Object[] arguments;
