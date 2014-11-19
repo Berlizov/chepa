@@ -121,8 +121,8 @@ public class DBConnector {
     public static UsersTypes getUserType(User u) {
         try {
             String sql = "SELECT * FROM USERS " +
-                    "WHERE LOGIN LIKE '" + u.getLogin() + "' " +
-                    "AND PASS LIKE '" + u.getPass() + "' ";
+                    "WHERE LOGIN = '" + u.getLogin() + "' " +
+                    "AND PASS = '" + u.getPass() + "' ";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -139,7 +139,7 @@ public class DBConnector {
         try {
             String sql = "UPDATE USERS SET PASS = '" + u.getPass() + "', " +
                     " DT = CURRENT_TIMESTAMP " +
-                    "WHERE LOGIN LIKE '" + u.getLogin() + "' ";
+                    "WHERE LOGIN = '" + u.getLogin() + "' ";
             System.out.println(sql);
             stmt.executeUpdate(sql);
 
@@ -174,7 +174,7 @@ public class DBConnector {
         ArrayList<User> str = new ArrayList<>();
         try {
             String sql = "SELECT * FROM USERS " +
-                    "WHERE TYPE LIKE '" + newType.getIntString() + "'";
+                    "WHERE TYPE = '" + newType.getIntString() + "'";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -193,7 +193,7 @@ public class DBConnector {
         try {
             String sql = "UPDATE USERS SET TYPE = '" + user.getType().getIntString() + "', " +
                     " DT = CURRENT_TIMESTAMP " +
-                    "WHERE LOGIN LIKE '" + user.getLogin() + "' ";
+                    "WHERE LOGIN = '" + user.getLogin() + "' ";
             System.out.println(sql);
             stmt.executeUpdate(sql);
 
@@ -209,7 +209,7 @@ public class DBConnector {
         try {
 
             String sql = "SELECT COUNT(*) FROM USERS " +
-                    "WHERE LOGIN LIKE '" + userLogin + "'";
+                    "WHERE LOGIN = '" + userLogin + "'";
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 if (rs.getInt("COUNT(*)") <= 0)
@@ -234,7 +234,7 @@ public class DBConnector {
                     sql = "SELECT * FROM PROJECT ";
                     break;
                 case PRODUCT_OWNER:
-                    sql = "SELECT * FROM PROJECT WHERE PRODUCT_OWNER LIKE '" + user.getLogin() + "'";
+                    sql = "SELECT * FROM PROJECT WHERE PRODUCT_OWNER = '" + user.getLogin() + "'";
                     break;
                 default:
                     System.err.println("Unknown user type!");
@@ -258,7 +258,7 @@ public class DBConnector {
         try {
             String sql = "UPDATE PROJECT SET PRODUCT_OWNER = '" + userLogin + "' , " +
                     " DT = CURRENT_TIMESTAMP " +
-                    "WHERE NAME LIKE '" + name + "' ";
+                    "WHERE NAME = '" + name + "' ";
             System.out.println(sql);
             stmt.executeUpdate(sql);
 
@@ -271,7 +271,7 @@ public class DBConnector {
 
     public static String getProjectProductOwner(String name) {
         try {
-            String sql = "SELECT PRODUCT_OWNER FROM PROJECT WHERE NAME LIKE '" + name + "'";
+            String sql = "SELECT PRODUCT_OWNER FROM PROJECT WHERE NAME = '" + name + "'";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -298,6 +298,26 @@ public class DBConnector {
             String sql = "SELECT USERS.LOGIN, USERS.TYPE FROM USERS INNER JOIN PROJECT_USER\n" +
                     "ON USERS.LOGIN = PROJECT_USER.USER\n" +
                     "WHERE PROJECT_USER.PROJECT='" + name + "'";
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
+            ArrayList<User> users = new ArrayList<>();
+            while (rs.next()) {
+                users.add(new User(rs.getString("LOGIN"),
+                        "",
+                        UsersTypes.valueOf(Integer.parseInt(rs.getString("TYPE")))));
+            }
+            return users.toArray(new User[users.size()]);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static User[] getProjectUsersByType(String name,UsersTypes usersType) {
+        try {
+            String sql = "SELECT USERS.LOGIN, USERS.TYPE FROM USERS INNER JOIN PROJECT_USER\n" +
+                    "ON USERS.LOGIN = PROJECT_USER.USER\n" +
+                    "WHERE PROJECT_USER.PROJECT='" + name + "'" +
+                    "AND USERS.TYPE='"+usersType.getIntString()+"'";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             ArrayList<User> users = new ArrayList<>();

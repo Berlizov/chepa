@@ -121,6 +121,9 @@ public class SocketForOneUser extends Thread {
                         case GET_PROJECT_USERS:
                             pock.setArguments(DBConnector.getProjectUsers((String) pock.arguments[0]));
                             break;
+                        case GET_PROJECT_USERS_BY_TYPE:
+                            pock.setArguments(DBConnector.getProjectUsersByType((String) pock.arguments[0],(UsersTypes) pock.arguments[1]));
+                            break;
                         case CHANGE_PROJECT_USERS:
                             String[] s = pock.getArrayOfArgs(String[].class);
                             pock.setArguments(DBConnector.changeProjectUsers(s[0], Arrays.copyOfRange(s, 1, s.length)));
