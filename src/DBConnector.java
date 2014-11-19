@@ -357,6 +357,7 @@ public class DBConnector {
             return false;
         }
     }
+
     public static Task[]  getProjectTasks(String project) {
         try {
             String sql = "SELECT * FROM TASK\n" +
@@ -366,13 +367,28 @@ public class DBConnector {
             ArrayList<Task> tasks = new ArrayList<>();
             while (rs.next()) {
                 tasks.add(new Task(rs.getString("NAME"),
-                        rs.getString("PROJECT")));
+                        rs.getString("PROJECT"),
+                        PokerCardDeck.valueOf(rs.getInt("COMPLEXITY")),PokerCardDeck.THIRTEEN));//todo
             }
             return tasks.toArray(new Task[tasks.size()]);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+    public static boolean setTaskComplexity(Task task) {
+        try {
+            String sql = "UPDATE TASK " +
+                    "SET COMPLEXITY= " +task.getComplexity().ordinal()+
+                    " WHERE NAME = '" + task.getName() + "' and PROJECT = '" + task.getProject() + "';";
+            System.err.println(sql);
+            stmt.executeUpdate(sql);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 }
 

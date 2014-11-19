@@ -16,7 +16,13 @@ public enum UsersTypes {
         }
         throw new IllegalArgumentException("User type not found.");
     }
-
+    public static String[] getModel(){
+        String[] str=new String[values().length];
+        for (int i = 0; i <str.length; i++) {
+            str[i]=values()[i].toString();
+        }
+        return str;
+    }
     public static String[] getUserTypes() {
         String[] types = new String[values().length];
 

@@ -16,7 +16,8 @@ public enum API {
     GET_PROJECT_USERS(1),
     CHANGE_PROJECT_USERS(-1),
     ADD_PROJECT_TASK(1),
-    GET_PROJECT_TASKS(1);
+    GET_PROJECT_TASKS(1),
+    SET_PROJECT_TASK_COMPLEXITY(1);
     final int argCount;
 
     private API(int argCount) {
