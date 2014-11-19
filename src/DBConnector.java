@@ -48,49 +48,56 @@ public class DBConnector {
     public static void createDefTables() {
         try {
             String sql = "CREATE TABLE USERS " +
-                    "(LOGIN     CHAR(50)    PRIMARY KEY NOT NULL UNIQUE, " +
-                    " PASS      CHAR(50)    NOT NULL, " +
-                    " TYPE      INT         NOT NULL," +
-                    " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    "(LOGIN         CHAR(50)    PRIMARY KEY NOT NULL UNIQUE, " +
+                    " PASS          CHAR(50)    NOT NULL, " +
+                    " TYPE          INT         NOT NULL," +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
             sql += "CREATE TABLE PROJECT  " +
-                    "(NAME     CHAR(50) PRIMARY KEY  NOT NULL, " +
-                    " PRODUCT_OWNER     CHAR(50), " +
-                    " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    "(NAME          CHAR(50)    PRIMARY KEY  NOT NULL, " +
+                    " PRODUCT_OWNER CHAR(50), " +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
             sql += "CREATE TABLE PROJECT_USER  " +
-                    "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    " PROJECT     CHAR(50)    NOT NULL, " +
-                    " USER     CHAR(50)     NOT NULL, " +
-                    " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    "(ID            INTEGER     PRIMARY KEY AUTOINCREMENT," +
+                    " PROJECT       CHAR(50)    NOT NULL, " +
+                    " USER          CHAR(50)    NOT NULL, " +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
             sql += "CREATE TABLE TASK " +
-                    "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    " NAME     CHAR(50)    NOT NULL, " +
-                    " PROJECT     CHAR(50)    NOT NULL, " +
-                    " COMPLEXITY     INTEGER, " +
-                    " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    "(ID            INTEGER     PRIMARY KEY AUTOINCREMENT," +
+                    " NAME          CHAR(50)    NOT NULL, " +
+                    " PROJECT       CHAR(50)    NOT NULL, " +
+                    " COMPLEXITY    INTEGER, " +
+                    " SPRINT_ID     INTEGER, " +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
-            /*sql += "CREATE TABLE TASK_DEVELOPER " +
-                    "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    " TASK_ID     INTEGER    NOT NULL, " +
-                    " DEVELOPER_ID     INTEGER    NOT NULL, " +
-                    " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+            sql += "CREATE TABLE TASK_DEVELOPER " +
+                    "(ID            INTEGER     PRIMARY KEY AUTOINCREMENT," +
+                    " TASK_ID       INTEGER     NOT NULL, " +
+                    " DEVELOPER     CHAR(50)    NOT NULL, " +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
             sql += "CREATE TABLE TASK_DEVELOPER_COMPLEXITY " +
-                    "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    " TASK_ID     INTEGER    NOT NULL, " +
-                    " DEVELOPER_ID     INTEGER    NOT NULL, " +
-                    " COMPLEXITY    INTEGER    NOT NULL, " +
-                    " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    "(ID            INTEGER     PRIMARY KEY AUTOINCREMENT," +
+                    " TASK_ID       INTEGER     NOT NULL, " +
+                    " DEVELOPER     CHAR(50)    NOT NULL, " +
+                    " COMPLEXITY    INTEGER     NOT NULL, " +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
                     " );\n";
-            sql += "CREATE TABLE TASK_STAKEHOLDER_RATING" +
-                    "(ID        INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    " TASK_ID     INTEGER    NOT NULL, " +
-                    " STAKEHOLDER_ID     INTEGER    NOT NULL, " +
-                    " RATING    INTEGER    NOT NULL, " +
-                    " DT  TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                    " );\n";*/
+            sql += "CREATE TABLE SUBTASK " +
+                    "(ID            INTEGER     PRIMARY KEY AUTOINCREMENT," +
+                    " TASK_ID       INTEGER     NOT NULL, " +
+                    " COMPLETENESS  INTEGER, " +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
+                    " );\n";
+            sql += "CREATE TABLE SPRINT " +
+                    "(ID            INTEGER     PRIMARY KEY AUTOINCREMENT," +
+                    " PROJECT_ID    INTEGER     NOT NULL, " +
+                    " START_TIME    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP, " +
+                    " END_TIME      TIMESTAMP   NOT NULL, " +
+                    " DT            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP" +
+                    " );\n";
             stmt.executeUpdate(sql);
 
             System.out.println("FIRST START");
@@ -297,7 +304,8 @@ public class DBConnector {
         try {
             String sql = "SELECT USERS.LOGIN, USERS.TYPE FROM USERS INNER JOIN PROJECT_USER\n" +
                     "ON USERS.LOGIN = PROJECT_USER.USER\n" +
-                    "WHERE PROJECT_USER.PROJECT='" + name + "'";
+                    "WHERE PROJECT_USER.PROJECT='" + name + "'" +
+                    "ORDER BY USERS.TYPE DESC, USERS.LOGIN ASC ";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             ArrayList<User> users = new ArrayList<>();
@@ -317,7 +325,8 @@ public class DBConnector {
             String sql = "SELECT USERS.LOGIN, USERS.TYPE FROM USERS INNER JOIN PROJECT_USER\n" +
                     "ON USERS.LOGIN = PROJECT_USER.USER\n" +
                     "WHERE PROJECT_USER.PROJECT='" + name + "'" +
-                    "AND USERS.TYPE='"+usersType.getIntString()+"'";
+                    "AND USERS.TYPE='"+usersType.getIntString()+"'" +
+                    "ORDER BY USERS.LOGIN ASC";
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             ArrayList<User> users = new ArrayList<>();
@@ -385,10 +394,22 @@ public class DBConnector {
             System.out.println(sql);
             ResultSet rs = stmt.executeQuery(sql);
             ArrayList<Task> tasks = new ArrayList<>();
+            ArrayList<Integer> tasksID = new ArrayList<>();
             while (rs.next()) {
+                tasksID.add(rs.getInt("ID"));
                 tasks.add(new Task(rs.getString("NAME"),
                         rs.getString("PROJECT"),
-                        PokerCardDeck.valueOf(rs.getInt("COMPLEXITY")),PokerCardDeck.THIRTEEN));//todo
+                        PokerCardDeck.valueOf(rs.getInt("COMPLEXITY")),PokerCardDeck.NOTSET));
+            }
+            for(int i=0;i<tasks.size();i++) {
+                sql = "SELECT COMPLEXITY FROM TASK_DEVELOPER_COMPLEXITY\n" +
+                        "WHERE TASK_ID="+tasksID.get(i)+";";
+                ResultSet rss = stmt.executeQuery(sql);
+                ArrayList<PokerCardDeck> userComplexity=new ArrayList<>();
+                while (rss.next()) {
+                    userComplexity.add(PokerCardDeck.valueOf(rss.getInt("COMPLEXITY")));
+                }
+                tasks.get(i).setUserComplexity(PokerCardDeck.getNearest(userComplexity));
             }
             return tasks.toArray(new Task[tasks.size()]);
         } catch (Exception e) {
@@ -396,11 +417,26 @@ public class DBConnector {
             return null;
         }
     }
-    public static boolean setTaskComplexity(Task task) {
+    public static boolean setTaskComplexity(Task task,UsersTypes type) {
         try {
-            String sql = "UPDATE TASK " +
-                    "SET COMPLEXITY= " +task.getComplexity().ordinal()+
-                    " WHERE NAME = '" + task.getName() + "' and PROJECT = '" + task.getProject() + "';";
+            String sql;
+            switch (type){
+                case PRODUCT_OWNER:
+                    sql = "UPDATE TASK " +
+                            "SET COMPLEXITY= " +task.getComplexity().ordinal()+
+                            " WHERE NAME = '" + task.getName() + "' and PROJECT = '" + task.getProject() + "';";
+                    break;
+                case DEVELOPER:
+                    sql = "INSERT OR REPLACE INTO TASK_DEVELOPER_COMPLEXITY" +
+                            "(TASK_ID, DEVELOPER, COMPLEXITY, )" +
+                            " values (" +
+                            "(SELECT ID FROM TASK WHERE NAME='" +task.getName()+"' AND PROJECT + '"+task.getProject()+"'), "+
+                            task.getUserComplexity().ordinal()+", CURRENT_TIMESTAMP);";
+                    break;
+                default:return false;
+            }
+
+
             System.err.println(sql);
             stmt.executeUpdate(sql);
             return true;

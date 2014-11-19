@@ -1,8 +1,10 @@
+import java.util.ArrayList;
+
 /**
  * Created by 350z6233 on 18.11.2014.
  */
 public enum PokerCardDeck {
-    NOTSET(-1),
+    NOTSET(Integer.MAX_VALUE),
     ZERO(0),
     HALF(0.5),
     ONE(1),
@@ -45,5 +47,20 @@ public enum PokerCardDeck {
             }
         }
         return NOTSET;
+    }
+    public static PokerCardDeck getNearest(ArrayList<PokerCardDeck> val){
+        double c=0;
+        boolean f=false;
+        for (PokerCardDeck aVal : val) {
+            c += aVal.value;
+            if(aVal!=NOTSET)
+                f=true;
+        }
+        c/=val.size();
+        if(f) {
+            return getNearest(c);
+        }else {
+            return NOTSET;
+        }
     }
 }

@@ -137,7 +137,7 @@ public class SocketForOneUser extends Thread {
                             pock.setArguments(DBConnector.getProjectTasks((String) pock.arguments[0]));
                             break;
                         case SET_PROJECT_TASK_COMPLEXITY:
-                            pock.setArguments(DBConnector.setTaskComplexity((Task) pock.arguments[0]));
+                            pock.setArguments(DBConnector.setTaskComplexity((Task) pock.arguments[0],user.getType()));
                             break;
                     }
                     writeMassage(pock);
